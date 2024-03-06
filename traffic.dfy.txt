@@ -1,0 +1,264 @@
+class Vehicle {
+    var destination: int;
+    var timeEntered: int;
+    var timeParked: int;
+
+    constructor init(destination: int, timeEntered: int)
+    {
+        this.destination := destination;
+        this.timeEntered := timeEntered;
+        this.timeParked := 0;
+    }
+
+    method SetTimeParked(timeParked: int)
+    {
+        this.timeParked := timeParked;
+    }
+
+    method GetDestination(): int
+    {
+        return destination;
+    }
+
+    method GetTimeEntered(): int
+    {
+        return timeEntered;
+    }
+
+    method GetTimeParked(): int
+    {
+        return timeParked;
+    }
+}
+
+class Clock {
+    var time: int;
+    var isRunning: bool;
+
+    constructor init()
+    {
+        this.time := 0;
+        this.isRunning := true;
+    }
+
+    method Tick()
+    {
+        time := time + 1;
+    }
+
+    method IsMultipleOfFiveMinutes(): bool
+    {
+        return time % 300 == 0; // 300 seconds = 5 minutes
+    }
+
+    method PrintTimeAndRemainingSpaces()
+    {
+        if IsMultipleOfFiveMinutes() {
+            // Print current time and remaining spaces in each car park
+            // (implementation omitted for brevity)
+        }
+    }
+
+    method IsRunning(): bool
+    {
+        return isRunning;
+    }
+
+    method Stop()
+    {
+        isRunning := false;
+    }
+}
+
+class Road {
+    var capacity: int;
+    var vehicles: seq<Vehicle>;
+
+    constructor init(capacity: int)
+    {
+        this.capacity := capacity;
+        this.vehicles := [];
+    }
+
+    method Insert(vehicle: Vehicle)
+    {
+        if vehicles.Length() < capacity {
+            vehicles := vehicles + [vehicle];
+        } else {
+            // Handle road full error
+            assert false, "Road is full";
+        }
+    }
+
+    method Extract(): Vehicle
+    {
+        if vehicles.Length() > 0 {
+            var vehicle := vehicles[0];
+            vehicles := vehicles[1..];
+            return vehicle;
+        } else {
+            // Handle extraction from empty road error
+            assert false, "Road is empty";
+        }
+    }
+
+    method HasVehicle(): bool
+    {
+        return vehicles.Length() > 0;
+    }
+
+    method Capacity(): int
+    {
+        return capacity;
+    }
+}
+
+class CarPark {
+    var id: int;
+    var name: string;
+    var incomingRoad: Road;
+    var outgoingRoad: Road;
+    var vehicles: seq<Vehicle>;
+    var clock: Clock;
+
+    constructor init(id: int, name: string, incomingRoad: Road, outgoingRoad: Road, clock: Clock)
+    {
+        this.id := id;
+        this.name := name;
+        this.incomingRoad := incomingRoad;
+        this.outgoingRoad := outgoingRoad;
+        this.vehicles := [];
+        this.clock := clock;
+    }
+
+    method IsSpace(): bool
+    {
+        return vehicles.Length() < outgoingRoad.Capacity();
+    }
+
+    method Run()
+    {
+        while clock.IsRunning()
+        {
+            if IsSpace() && incomingRoad.HasVehicle()
+            {
+                var vehicle := incomingRoad.Extract();
+                vehicles := vehicles + [vehicle];
+            }
+        }
+    }
+}
+
+class EntryPoint {
+    var road: Road;
+    var name: string;
+    var maxCarsPerHour: int;
+    var clock: Clock;
+
+    constructor init(road: Road, name: string, maxCarsPerHour: int, clock: Clock)
+    {
+        this.road := road;
+        this.name := name;
+        this.maxCarsPerHour := maxCarsPerHour;
+        this.clock := clock;
+    }
+
+    method Generate()
+    {
+        while clock.IsRunning()
+        {
+            var numCarsToGenerate := maxCarsPerHour / 3600; // Convert maxCarsPerHour to cars per second
+            for i in 0 .. numCarsToGenerate
+            {
+                var destination := // Generate random destination
+                var currentTime := // Get current time from clock
+                var vehicle := new Vehicle(destination, currentTime);
+                road.Insert(vehicle);
+            }
+        }
+    }
+}
+
+class Junction {
+    var incomingRoads: seq<Road>;
+    var outgoingRoads: seq<Road>;
+    var trafficLightSequence: seq<int>;
+    var duration: int;
+    var clock: Clock;
+
+    constructor init(incomingRoads: seq<Road>, outgoingRoads: seq<Road>, trafficLightSequence: seq<int>, duration: int, clock: Clock)
+    {
+        this.incomingRoads := incomingRoads;
+        this.outgoingRoads := outgoingRoads;
+        this.trafficLightSequence := trafficLightSequence;
+        this.duration := duration;
+        this.clock := clock;
+    }
+
+    method Run()
+    {
+        while clock.IsRunning()
+        {
+            for i in 0 .. incomingRoads.Length() - 1
+            {
+                // Control traffic light for incomingRoads[i] to outgoingRoads[i]
+                // based on trafficLightSequence and duration
+                // (implementation omitted for brevity)
+            }
+        }
+    }
+}
+
+class ConcurrencyAssignment {
+    var clock: Clock;
+    var northRoad: Road;
+    var eastRoad: Road;
+    var southRoad: Road;
+    var junction1: Junction;
+    var junction2: Junction;
+    var junction3: Junction;
+    var junction4: Junction;
+    var carParks: seq<CarPark>;
+
+    constructor init()
+    {
+        this.clock := new Clock();
+        this.northRoad := new Road(100);
+        this.eastRoad := new Road(100);
+        this.southRoad := new Road(100);
+        // Initialize other roads, junctions, and car parks
+    }
+
+    method Start()
+    {
+        var northEntryPoint := new EntryPoint(northRoad, "North Entry", 60, clock);
+        var eastEntryPoint := new EntryPoint(eastRoad, "East Entry", 60, clock);
+        var southEntryPoint := new EntryPoint(southRoad, "South Entry", 60, clock);
+
+        var junction1 := new Junction([northRoad], [eastRoad], [0], 60, clock);
+        var junction2 := new Junction([eastRoad], [southRoad], [0], 60, clock);
+        var junction3 := new Junction([southRoad], [northRoad], [0], 60, clock);
+        var junction4 := new Junction([northRoad, eastRoad, southRoad], [], [0], 60, clock);
+
+        // Initialize and start car parks
+        // (implementation omitted for brevity)
+
+        // Start clock
+        while clock.IsRunning()
+        {
+            clock.Tick();
+            clock.PrintTimeAndRemainingSpaces();
+        }
+    }
+
+    method Stop()
+    {
+        clock.Stop();
+    }
+}
+
+method Main()
+{
+    var simulation := new ConcurrencyAssignment();
+    simulation.Start();
+}
